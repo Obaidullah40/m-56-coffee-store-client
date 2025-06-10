@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import { FcGoogle } from 'react-icons/fc';
-import { Link } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
+import { AuthContext } from '../auth/AuthContext';
 
 const Signin = () => {
     const [error, setError] = useState("");
-    // const { signInUser, googleSignIn, forgetPassword } = useContext(AuthContext);
-    // const emailRef = useRef();
-    // const location = useLocation();
-    // const navigate = useNavigate();
-    // console.log(location);
+    const { signInUser, googleSignIn, forgetPassword } = useContext(AuthContext);
+    const emailRef = useRef();
+    const location = useLocation();
+    const navigate = useNavigate();
+    console.log(error);
 
     const handleLogin = (e) => {
         e.preventDefault();
@@ -17,16 +18,32 @@ const Signin = () => {
         const email = form.email.value;
         const password = form.password.value;
 
-        // signInUser(email, password)
-        //     .then((result) => {
-        //         toast.success("Login successful!");
-        //         navigate(`${location.state ? location.state : "/"}`);
-        //     })
-        //     .catch((error) => {
-        //         const errorMessage = error.message;
+        signInUser(email, password)
+            .then((result) => {
+                const singInInfo = {
+                    email,
+                    lastSignInTime: result.user?.metadata?.lastSignInTime
+                }
+                 // update last sign in to the database
+                fetch('http://localhost:3000/users', {
+                    method: 'PATCH', 
+                    headers: {
+                        'content-type': 'application/json'
+                    }, 
+                    body: JSON.stringify(singInInfo)
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log('after update patch', data)
+                        // toast.success("Login successful!");
+                        navigate(`${location.state ? location.state : "/"}`);
+                    })
+            })
+            .catch((error) => {
+                const errorMessage = error.message;
         //         toast.error(errorMessage);
-        //         setError(errorMessage);
-        //     });
+                setError(errorMessage);
+            });
     };
 
     const handleGoogleLogin = () => {
@@ -41,17 +58,17 @@ const Signin = () => {
     }
 
     const handleForgetPassword = () => {
-        // const email = emailRef.current.value;
+        const email = emailRef.current.value;
 
-        // setError('')
+        setError('')
         // // Password reset email sent!
-        // forgetPassword(email)
-        //     .then(() => {
-        //         toast.warn("A password reset email is sent. Please check your email.")
-        //     })
-        //     .catch(error => {
-        //         setError(error.message)
-        //     })
+        forgetPassword(email)
+            .then(() => {
+                // toast.warn("A password reset email is sent. Please check your email.")
+            })
+            .catch(error => {
+                setError(error.message)
+            })
     }
 
     return (

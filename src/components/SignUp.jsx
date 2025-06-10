@@ -5,7 +5,7 @@ import { AuthContext } from '../auth/AuthContext';
 import Swal from 'sweetalert2';
 
 const SignUp = () => {
-    const { createUser, setUser, updateUser, googleSignIn } = useContext(AuthContext);
+    const { createUser, googleSignIn } = useContext(AuthContext);
     const [nameError, setNameError] = useState("");
     const [passwordError, setPasswordError] = useState("");
     //   const location = useLocation();
@@ -17,26 +17,34 @@ const SignUp = () => {
         const form = e.target;
         const formData = new FormData(form);
 
-        const { email, password, ...userProfile } = Object.fromEntries(formData.entries());
-
-        console.log(password, email, userProfile);
+        const { email, password, ...restFormData } = Object.fromEntries(formData.entries());
 
 
+        
+        
         // // Password Validation
         // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z]).{6,}$/;
-
+        
         // if (!passwordRegex.test(password)) {
-        //   setPasswordError(
-        //     "Password must be at least 6 characters long, and include both uppercase and lowercase letters."
-        //   );
-        //   return;
-        // } else {
-        //   setPasswordError("");
-        // }
-
-        // Create User
-        createUser(email, password)
-            .then((result) => {
+            //   setPasswordError(
+                //     "Password must be at least 6 characters long, and include both uppercase and lowercase letters."
+                //   );
+                //   return;
+                // } else {
+                    //   setPasswordError("");
+                    // }
+                    
+                    // Create User
+                    createUser(email, password)
+                    .then((result) => {
+                        
+                        const userProfile = {
+                            email, 
+                            ...restFormData,
+                            creationTime: result.user?.metadata?.creationTime,
+                            lastSignInTime: result.user?.metadata?.lastSignInTime
+                        }
+                        console.log(password, email, userProfile);
 
                 // send coffee data to the db
                 fetch('http://localhost:3000/users', {
@@ -62,17 +70,6 @@ const SignUp = () => {
                         }
                     })
                 //     const user = result.user;
-                //     updateUser({ displayName: name, photoURL: photo })
-                //       .then(() => {
-                //         setUser({ ...user, displayName: name, photoURL: photo });
-                //         toast.success("Registration successful!");
-                //         navigate(`${location.state ? location.state : "/"}`);
-                //       })
-                //       .catch((error) => {
-                //         console.error("Update error:", error);
-                //         toast.warning("Registered, but profile not fully updated.");
-                //         setUser(user);
-                //   });
             })
             .catch((error) => {
                 // toast.error(`${error.message} (${error.code})`);
